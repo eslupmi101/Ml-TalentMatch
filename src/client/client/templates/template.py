@@ -112,7 +112,6 @@ def template(
         )
         def templated_page():
             return rx.chakra.hstack(
-                sidebar(),
                 rx.chakra.box(
                     rx.chakra.box(
                         page_content(),
@@ -120,7 +119,6 @@ def template(
                     ),
                     **styles.template_page_style,
                 ),
-                menu_button(),
                 align_items="flex-start",
                 transition="left 0.5s, width 0.5s",
                 position="relative",

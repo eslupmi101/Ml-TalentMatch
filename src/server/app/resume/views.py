@@ -21,7 +21,5 @@ resume_router = APIRouter(prefix='/resumes', tags=['resume'])
 async def resume_upload(
     data: ResumeUpload = Depends(),
 ):
-    if resume := await parse_resume(data.file, data.api_key):
-        result = dict()
-        result['resume'] = resume
+    if result := await parse_resume(data.file, data.api_key):
         return result
