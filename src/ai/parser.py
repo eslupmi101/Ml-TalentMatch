@@ -4,86 +4,82 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain.prompts import load_prompt, PromptTemplate
 from langchain_openai import ChatOpenAI
+import json
+from src.ai.evaluator import evaluate
+import datetime as dt
 
 
 class Contact(BaseModel):
-    value: str = Field(description="Значение")
-    comment: str = Field(description="Комментарий")
-    contact_type: str = Field(description="Тип контакта", enum=(
-        "Телефон", "Email", "Skype", "Telegram", "Github"))
+    # use parser to factcheck
+    value: str = Field(description='Contact Information')
+    comment: str = Field(description='Additional Comments')
+    contact_type: str = Field(
+        description='Type of contact. If it is not a phone number, please refer to the provided URL. If it does not match any of the given options, do not include it.',
+        enum=('Phone', 'Email', 'Skype', 'Telegram', 'Github')
+    )
 
 
 class Education(BaseModel):
-    year: str = Field(description="Год окончания")
-    organization: str = Field(description="Название учебного заведения")
-    faculty: str = Field(description="Факультет")
-    specialty: str = Field(description="Специальность")
-    result: str = Field(description="Результат обучения")
-    education_type: str = Field(description="Тип образования", enum=[
-                                "Начальное", "Повышение квалификации", "Сертификаты", "Основное"])
-    education_level: str = Field(description="Уровень образования", enum=[
-                                 "Среднее", "Среднее специальное", "Неоконченное высшее", "Высшее, Бакалавр", "Магистр", "Кандидат наук", "Доктор наук"])
+    year: str = Field(description='Year of Graduation')
+    organization: str = Field(description='Educational Institution')
+    faculty: str = Field(description='Faculty')
+    specialty: str = Field(description='Specialty')
+    result: str = Field(
+        description='Skills and courses relevant to the candidate\'s education')
+    education_type: str = Field(description='Type of Education', enum=[
+        'School', 'Continuing Education', 'Certificate', 'Formal Education'
+    ])
+    education_level: str = Field(description='Level of Education. CONSIDER THE DURATION OF EDUCATION AND THE NAME OF THE SCHOOL.', enum=[
+        'Secondary', 'Trade School', 'Incomplete Bachelor', 'Bachelor', 'Master', 'PhD Candidate', 'PhD'
+    ])
 
 
 class Experience(BaseModel):
-    starts: str = Field(description="Год начала")
-    ends: str = Field(description="Год окончания")
-    employer: str = Field(description="Организация")
-    city: str = Field(description="Город")
-    url: str = Field(description="Ссылка на сайт работодателя")
-    position: str = Field(description="Должность")
-    description: str = Field(description="Описание")
+    starts: str = Field(description='Start Year')
+    ends: str = Field(description='End Year')
+    employer: str = Field(description='Organization')
+    city: str = Field(description='City')
+    url: str = Field(description='Organization\'s Website URL')
+    position: str = Field(description='Job Title')
+    description: str = Field(description='Job/Position Description')
     order: str = Field(
-        description="Порядок следования в массиве опыта работы (для сортировки)")  # Ну это надо посмотреть
+        description='List of employers, sorted by start year in ascending order')
 
 
 class Language(BaseModel):
-    language: str = Field(description="Язык")
-    language_level: str = Field(description="Уровень владения языком", enum=[
-                                "Начальный", "Элементарный", "Средний", "Средне-продвинутый", "Продвинутый", "В совершенстве", "Родной"])
+    language: str = Field(description='Language')
+    language_level: str = Field(description='Language proficiency level, CHOOSE BEST option fitting from options given in \"enum\" field', enum=[
+        'Beginner', 'Elementary', 'Intermediate', 'Upper-Intermediate', 'Advanced', 'Fluent', 'Native'])
 
 
 class Resume(BaseModel):
-    first_name: str = Field(description="Имя")
-    last_name: str = Field(description="Фамилия")
-    middle_name: str = Field(description="Отчество")
-    birth_date: str = Field(description="Дата рождения в формате YYYY-MM-DD")
-    birth_date_year_only: bool = Field(
-        description="Если true, дата рождения вычисляется из возраста (Например, возраст 20 -> 2004-01-01)")  # Вот это лучше ручками
-    country: str = Field(description="Страна")
-    city: str = Field(description="Город")
-    about: str = Field(description="Описание")
-    key_skills: str = Field(description="Ключевые навыки")
-    salary_expectations_amount: str = Field(description="Зарплатные ожидания")
+    first_name: str = Field(description='First Name')
+    last_name: str = Field(description='Last Name')
+    middle_name: str = Field(description='Middle Name')
+    birth_date: str = Field(description='Date of Birth (YYYY-MM-DD)')
+    country: str = Field(
+        description='Country of Residence (ONLY IF SPECIFIED)')
+    city: str = Field(description='City of Residence (ONLY IF SPECIFIED)')
+    about: str = Field(description='About the Candidate')
+    key_skills: str = Field(description='Key Skills and Tools')
+    salary_expectations_amount: str = Field(
+        description='Expected Salary Amount')
     salary_expectations_currency: str = Field(
-        description="Валюта зарплатных ожиданий")
-    photo_path: str = Field(description="Ссылка на фото")
-    gender: str = Field(description="Пол", enum=['Мужской', 'Женский'])
-    resume_name: str = Field(description="Название резюме")
-    source_link: str = Field(description="Ссылка на источник резюме")
-    contact: List[Contact] = Field(description="Контактные данные")
-    education: List[Education] = Field(description="Образование")
-    experience: List[Experience] = Field(description="Опыт работы")
-    language: List[Language] = Field(
-        description="Владение иностранными языками")
+        description='Expected Salary Currency')
+    gender: str = Field(description='Gender', enum=['Male', 'Female'])
+    resume_name: str = Field(description='Resume Title')
+    contactItems: List[Contact] = Field(description='Contact Information')
+    educationItems: List[Education] = Field(
+        description='Educational Background')
+    experienceItems: List[Experience] = Field(
+        description='Relevant Work Experience')
+    languageItems: List[Language] = Field(description='Language Proficiency')
 
 
-# Update prompt template to include a variable placeholder for the result
-prompt_template = """Из следующего текста извлеки информацию:
-
-    text: {text}
-
-    Заполняй json таблицу только информацией содержащей в тексте выше, при ее отсутствии не заполняй поле.
-
-    format_instructions:
-    {format_instructions}
-"""
-
-
-async def get_json(resume_text: str, api_key: str) -> dict:
+def get_json(resume_text: str, api_key: str) -> dict:
     # Initialize ChatOpenAI instance
     openai = ChatOpenAI(temperature=0.0, api_key=api_key,
-                        model_name="gpt-3.5-turbo-instruct")
+                        model_name="gpt-4-turbo-preview")
 
     # Initialize JsonOutputParser
     parser = JsonOutputParser(pydantic_object=Resume)
@@ -92,6 +88,24 @@ async def get_json(resume_text: str, api_key: str) -> dict:
     instructions = parser.get_format_instructions()
     decoded_instructions = bytes(
         instructions, "utf-8").decode("unicode_escape")
+
+    prompt_template = """
+        As an experienced human resource manager named Lisa,
+        you are given a candidate's resume as text below.text: 
+
+
+        {text}
+
+
+        PLEASE FILL OUT THE JSON DICTIONARY ACCORDING TO THE FORMAT INSTRUCTIONS.
+        ONLY INCLUDE INFORMATION PRESENT IN THE GIVEN TEXT.
+        DO NOT ADD INFORMATION THAT WAS NOT IN THE TEXT OR IS FACTUALLY INCORRECT.
+
+        format_instructions:
+
+
+        {format_instructions}
+    """
 
     # Prepare prompt
     prompt = PromptTemplate(
@@ -103,5 +117,51 @@ async def get_json(resume_text: str, api_key: str) -> dict:
     # Run the pipeline
     chain = prompt | openai | parser
     result = chain.invoke({"text": resume_text})
-
+    try:
+        if result['birth_date'] != '':
+            date = dt.datetime.strptime(result['birth_date'], "%Y-%m-%d")
+            result['birth_date_year_only'] = date.day == date.month == 1
+        else:
+            result['birth_date_year_only'] = False
+    except:
+        result['birth_date_year_only'] = False
     return result
+
+
+def fix_language(api_key: str, response: dict):
+    openai = ChatOpenAI(temperature=0.0, api_key=api_key,
+                        model_name="gpt-4-turbo-preview")
+    language_items = response['language']
+    result = []
+    # Initialize JsonOutputParser
+    for l in language_items:
+        parser = JsonOutputParser(pydantic_object=Language)
+
+        instructions = parser.get_format_instructions()
+        decoded_instructions = bytes(
+            instructions, "utf-8").decode("unicode_escape")
+        prompt_template = """
+            YOU ARE A POLYGLOT AND EXPERT IN LANGUAGES, 
+            THOUSANDS PEOPLES LIFE DEPENDS ON THIS, DO YOUR ABSOLUTE BEST to replace language proficiency levels in the json object below to the best fitting level from specified:
+            "Beginner", "Elementary", "Intermediate", "Upper-intermediate", "Advanced", "Fluent", "Native"
+            {text}
+            PROVIDE ANSWER IN JSON FORMAT
+        """
+        prompt = PromptTemplate(
+            template=prompt_template,
+            input_variables=["text"],
+            partial_variables={"format_instructions": decoded_instructions},
+        )
+
+        # Run the pipeline
+        chain = prompt | openai | parser
+        fixed_language = chain.invoke({"text": json.dumps(l)})
+        result.append(fixed_language)
+    return result
+
+
+def evaluate_response(chat: ChatOpenAI, response: dict, resume: str) -> int:
+    total_score = 0
+    for k in response:
+        total_score += evaluate(chat, resume, {k: response[k]})
+    return total_score
