@@ -6,6 +6,7 @@ from langchain.prompts import load_prompt, PromptTemplate
 from langchain_openai import ChatOpenAI
 import json
 
+
 class Contact(BaseModel):
     # use parser to factcheck
     value: str = Field(description="Value")
@@ -28,11 +29,11 @@ class Education(BaseModel):
     education_type: str = Field(description="Education type", enum=[
         'School', 'Refresher course', 'Certificate', 'Formal'
     ])
-                                # "Начальное", "Повышение квалификации", "Сертификаты", "Основное"])
+    # "Начальное", "Повышение квалификации", "Сертификаты", "Основное"])
     education_level: str = Field(description="Education level, MAKE SURE TO CONSIDER DURATION OF EDUCATION AND SCHOOL NAME", enum=[
         'Secondary', 'Trade school', 'Unfinished bachelor', 'Bachelor', 'Master', 'PhD candidate', 'PhD'
     ])
-                                 # "Среднее", "Среднее специальное", "Неоконченное высшее", "Высшее, Бакалавр", "Магистр", "Кандидат наук", "Доктор наук"])
+    # "Среднее", "Среднее специальное", "Неоконченное высшее", "Высшее, Бакалавр", "Магистр", "Кандидат наук", "Доктор наук"])
 
 
 class Experience(BaseModel):

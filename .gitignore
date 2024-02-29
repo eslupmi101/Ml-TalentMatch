@@ -161,3 +161,6 @@ cython_debug/
 *.xml
 src/ai/result1.json
 .idea/Ml-TalentMatch.iml
+.DS_Store
+src/.DS_Store
+src/ai/.DS_Store
