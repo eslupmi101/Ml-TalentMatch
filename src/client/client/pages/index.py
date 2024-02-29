@@ -213,6 +213,10 @@ def index() -> rx.Component:
                     rx.table.cell(FormInputState.first_name),
                 ),
                 rx.table.row(
+                    rx.table.row_header_cell("last_name"),
+                    rx.table.cell(FormInputState.last_name),
+                ),
+                rx.table.row(
                     rx.table.row_header_cell("middle_name"),
                     rx.table.cell(FormInputState.middle_name),
                 ),
