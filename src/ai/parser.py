@@ -61,8 +61,8 @@ class Resume(BaseModel):
     last_name: str = Field(description="Surname")
     middle_name: str = Field(description="Middle name")
     birth_date: str = Field(description="Date of birth in YYYY-MM-DD format")
-    birth_date_year_only: bool = Field(
-        description="true if only year of birth was provided, else false (examples: birth date 2002: true, birth date 2002-03-04: false), IF BIRTH DATE WAS NOT GIVEN DO NOT FILL")  # Вот это лучше ручками
+    # birth_date_year_only: bool = Field(
+    #     description="true if only year of birth was provided, else false (examples: birth date 2002: true, birth date 2002-03-04: false), IF BIRTH DATE WAS NOT GIVEN DO NOT FILL")  # Вот это лучше ручками
     country: str = Field(description="Country")
     city: str = Field(description="City")
     about: str = Field(description="about")

@@ -80,7 +80,7 @@ Law
 Taras Shevchenko National University
 of Kyiv
 '''
-                        )
+)
 
 print(result)
 print(type(result))
