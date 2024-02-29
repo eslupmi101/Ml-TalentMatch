@@ -1,8 +1,7 @@
-from src.ai.parser import get_json, fix_language
+from src.ai.parser import get_json, fix_language, evaluate_response, ChatOpenAI
+import json
 
-result = get_json(
-    api_key='',
-    resume_text='''![](alina_manafli.001.png)
+resume = '''![](alina_manafli.001.png)
 
 **Evaluation Only. Created with Aspose.Words. Copyright 2003-2024 Aspose Pty Ltd.**
 
@@ -119,13 +118,137 @@ Apr 2016  Participant of the All-Republican Olympiad in Information Science
 [ref1]: alina_manafli.005.png
 
 '''
-                        )
+# result = get_json(
+#     api_key='',
+#     resume_text=resume)
+#
+# print(result)
 
-print(result)
+result = json.loads("""
+{
+   "first_name":"Alina",
+   "last_name":"Manafli",
+   "middle_name":"",
+   "birth_date":"",
+   "country":"",
+   "city":"",
+   "about":"",
+   "key_skills":"Java, JavaScript, C, C++, OpenCL, CUDA, OpenMP, OpenGL, React, Spring, Git",
+   "salary_expectations_amount":"",
+   "salary_expectations_currency":"",
+   "gender":"",
+   "contact":[
+      {
+         "value":"+46 764 595 000",
+         "comment":"",
+         "contact_type":"Телефон"
+      },
+      {
+         "value":"aaaaaamanafli@gmail.com",
+         "comment":"",
+         "contact_type":"Email"
+      }
+   ],
+   "education":[
+      {
+         "year":"2021",
+         "organization":"Tallinn University of Technology",
+         "faculty":"Computer and Systems Engineering",
+         "specialty":"",
+         "result":"Computer Systems Engineering, Object Oriented Programming",
+         "education_type":"Formal",
+         "education_level":"Master"
+      },
+      {
+         "year":"2021",
+         "organization":"Uppsala University",
+         "faculty":"Computer Science",
+         "specialty":"",
+         "result":"Software Engineering and Project Management, Advanced Computer Architecture, Computer Graphics, Low-Level Parallel Programming, Parallel Programming for EPciency, Computer Networks, Agile and Extreme Project Management",
+         "education_type":"Formal",
+         "education_level":"Master"
+      },
+      {
+         "year":"2019",
+         "organization":"Lomonosov Moscow State University",
+         "faculty":"Applied Mathematics",
+         "specialty":"",
+         "result":"Programming in C/C++, Discrete Mathematics, Parallel Programming, Linear Algebra, Calculus, Mathematical Statistics, Methods of Optimisation, Numerical Methods",
+         "education_type":"Formal",
+         "education_level":"Bachelor"
+      },
+      {
+         "year":"2017",
+         "organization":"Peter the Great St.Petersburg Polytechnic University",
+         "faculty":"Microelectronic Devices Programming",
+         "specialty":"",
+         "result":"",
+         "education_type":"Summer School",
+         "education_level":""
+      }
+   ],
+   "experience":[
+      {
+         "starts":"2020",
+         "ends":"2020",
+         "employer":"Kuehne + Nagel",
+         "city":"Tallinn, Estonia",
+         "url":"",
+         "position":"IT Trainee",
+         "description":"Designing and developing an open source fullstack application for Supply Chain Management of a fictional business.",
+         "order":"1"
+      },
+      {
+         "starts":"2020",
+         "ends":"2020",
+         "employer":"Uppsala University",
+         "city":"Uppsala, Sweden",
+         "url":"",
+         "position":"Teaching Assistant",
+         "description":"Assisting in teaching of the Software Engineering and Project Management course by leading the project work of four groups of students in the role of a Scrum coach and the project’s client.",
+         "order":"2"
+      },
+      {
+         "starts":"2018",
+         "ends":"2018",
+         "employer":"CERN",
+         "city":"Geneva, Switzerland",
+         "url":"",
+         "position":"Openlab Summer Intern",
+         "description":"Tested and optimized a set of common Question Answering NLP models on The Stanford Question Answering Dataset using Tensorflow.",
+         "order":"3"
+      },
+      {
+         "starts":"2017",
+         "ends":"2017",
+         "employer":"R.I.S.K. Company",
+         "city":"Baku, Azerbaijan",
+         "url":"",
+         "position":"Software Engineer Intern",
+         "description":"Programmed a voice recorder with Arduino by applying Digital Signal Processing methods.",
+         "order":"4"
+      }
+   ],
+   "language":[
+      {
+         "language":"English",
+         "language_level":"Fluent"
+      },
+      {
+         "language":"Russian",
+         "language_level":"Native"
+      },
+      {
+         "language":"Azerbaijani",
+         "language_level":"Native"
+      }
+   ]
+}
+""")
 
-print(fix_language(api_key='',
-                   response=result))
-
+openai = ChatOpenAI(temperature=0.0, api_key='',
+                    model_name="gpt-4-turbo-preview")
+print(evaluate_response(openai, result, resume))
 # TODO: use this to get string of resume
 # import aspose.words as aw
 #

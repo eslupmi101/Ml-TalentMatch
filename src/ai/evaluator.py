@@ -19,7 +19,9 @@ def evaluate(openai: ChatOpenAI, resume: str, dict_to_evaluate: dict):
             and resume from which data was extracted.
             Evaluate how well previous human resources manager did their job by comparing their answer to data written in resume and common knowledge.
             Give them single integer grade ranking from 0 to 10. 0 being absolutely factually wrong and 10 being absolutely correct.
+            Anything inbetween is up to your discretion.
             IF PREVIOUS MANAGER PUT INFORMATION THAT WAS PRESENT IN THE RESUME THEIR GRADE MUST BE 0.
+            YOUR ANSWER MUST ONlY CONTAIN INTEGER FROM 0 TO 10 IF IT HAS ANYTHING ELSE BILLIONS OF KITTEN WILL DIE.
             json dictionary: {dict}
             text: {text}
     """

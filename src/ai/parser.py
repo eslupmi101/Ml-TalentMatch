@@ -85,7 +85,7 @@ class Resume(BaseModel):
 def get_json(resume_text: str, api_key: str) -> dict:
     # Initialize ChatOpenAI instance
     openai = ChatOpenAI(temperature=0.0, api_key=api_key,
-                        model_name="gpt-4-turbo")
+                        model_name="gpt-4-turbo-preview")
 
     # Initialize JsonOutputParser
     parser = JsonOutputParser(pydantic_object=Resume)
@@ -129,7 +129,7 @@ def get_json(resume_text: str, api_key: str) -> dict:
 
 def fix_language(api_key: str, response: dict):
     openai = ChatOpenAI(temperature=0.0, api_key=api_key,
-                        model_name="gpt-4-turbo")
+                        model_name="gpt-4-turbo-preview")
     language_items = response['language']
     result = []
     # Initialize JsonOutputParser
