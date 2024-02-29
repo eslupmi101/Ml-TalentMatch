@@ -10,10 +10,8 @@ class Grade(BaseModel):
     # use parser to factcheck
     grade: int = Field(description="SINGLE INTEGER VALUE FROM ZERO TO TEN")
 
-def evaluate(api_key: str, resume: str, dict_to_evaluate: dict):
-    openai = ChatOpenAI(temperature=0.0, api_key=api_key,
-                        model_name="gpt-4")
-    result = []
+
+def evaluate(openai: ChatOpenAI, resume: str, dict_to_evaluate: dict):
     prompt_template = """
             DO YOUR ABSOLUTE BEST AT THIS TASK, IF YOU FAIL MILLIONS WILL DIE.
             You are very experienced human resource manager named Lisa.

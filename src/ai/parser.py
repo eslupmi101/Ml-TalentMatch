@@ -5,7 +5,7 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain.prompts import load_prompt, PromptTemplate
 from langchain_openai import ChatOpenAI
 import json
-
+from src.ai.evaluator import evaluate
 
 class Contact(BaseModel):
     # use parser to factcheck
@@ -102,7 +102,7 @@ class Resume(BaseModel):
 def get_json(resume_text: str, api_key: str) -> dict:
     # Initialize ChatOpenAI instance
     openai = ChatOpenAI(temperature=0.0, api_key=api_key,
-                        model_name="gpt-4")
+                        model_name="gpt-4-turbo")
 
     # Initialize JsonOutputParser
     parser = JsonOutputParser(pydantic_object=Resume)
@@ -141,7 +141,7 @@ def get_json(resume_text: str, api_key: str) -> dict:
 
 def fix_language(api_key: str, response: dict):
     openai = ChatOpenAI(temperature=0.0, api_key=api_key,
-                        model_name="gpt-4")
+                        model_name="gpt-4-turbo")
     language_items = response['language']
     result = []
     # Initialize JsonOutputParser
@@ -169,4 +169,11 @@ def fix_language(api_key: str, response: dict):
         fixed_language = chain.invoke({"text": json.dumps(l)})
         result.append(fixed_language)
     return result
+
+
+def evaluate_response(chat: ChatOpenAI, response: dict, resume: str) -> int:
+    total_score = 0
+    for k in response:
+        total_score += evaluate(chat, resume, {k: response[k]})
+    return total_score
 
