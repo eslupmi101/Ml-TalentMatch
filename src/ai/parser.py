@@ -6,6 +6,7 @@ from langchain.prompts import load_prompt, PromptTemplate
 from langchain_openai import ChatOpenAI
 import json
 from src.ai.evaluator import evaluate
+import datetime as dt
 
 
 class Contact(BaseModel):
@@ -73,13 +74,6 @@ class Resume(BaseModel):
     experienceItems: List[Experience] = Field(
         description='Relevant Work Experience')
     languageItems: List[Language] = Field(description='Language Proficiency')
-    # birth_date_year_only: bool = Field(
-    #     description="true if only year of birth was provided, else false (examples: birth date 2002: true, birth date 2002-03-04: false), IF BIRTH DATE WAS NOT GIVEN DO NOT FILL")  # Вот это лучше ручками
-    # photo_path: str = Field(description="Photo URL")
-    # source_link: str = Field(description="Ссылка на источник резюме")
-    # sometimes doesnt add experience ANDREY PODKIDYSHEV
-    # probably because employer is university chatgpt thinks that its education
-    # Update prompt template to include a variable placeholder for the result
 
 
 def get_json(resume_text: str, api_key: str) -> dict:
@@ -123,7 +117,14 @@ def get_json(resume_text: str, api_key: str) -> dict:
     # Run the pipeline
     chain = prompt | openai | parser
     result = chain.invoke({"text": resume_text})
-
+    try:
+        if result['birth_date'] != '':
+            date = dt.datetime.strptime(result['birth_date'], "%Y-%m-%d")
+            result['birth_date_year_only'] = date.day == date.month == 1
+        else:
+            result['birth_date_year_only'] = False
+    except:
+        result['birth_date_year_only'] = False
     return result
 
 

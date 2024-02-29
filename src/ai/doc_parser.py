@@ -26,8 +26,6 @@ def get_face(img_path: str, resize_factor=1.5):
         new_eh = min(var_img.shape[0] - new_ey, int(eh * (1 + resize_factor)))
 
         crop_image = var_img[new_ey:new_ey+new_eh, new_ex:new_ex+new_ew]
-
-        # cv2.imwrite('src/face.jpeg', crop_image)  # delete it
     return crop_image
 
 
@@ -68,8 +66,15 @@ def make_md_and_img(raw_doc: str, is_url: bool = True):
     if is_url:
         os.remove(raw_doc_path)
 
+    if img is not None:
+        file_path = 'temp.jpeg'
+        cv2.imwrite(file_path, img)
+        with open(file_path, "rb") as file:
+            img = file.read()
+        os.remove("temp.jpeg")
+
     return (md_str, img)
 
 
 if __name__ == '__main__':
-    print(make_md('src/ai/resume/Резюме.pdf', is_url=False))
+    make_md_and_img('src/ai/resumes/Gavril Sleptsov.pdf', is_url=False)
