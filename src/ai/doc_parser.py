@@ -2,7 +2,9 @@ from typing import List
 import aspose.words as aw
 from pathlib import Path
 import cv2
+import requests
 import os
+import uuid
 
 
 def detect_face(img_path):
@@ -15,39 +17,31 @@ def detect_face(img_path):
     return faces
 
 
-def clear_imagies(imagies_path: str):
+def clear_images(images_path: str):
     img_count = 0
-    for raw_image in os.listdir(imagies_path):
-        raw_img = os.path.join(imagies_path, raw_image)
+    for raw_image in os.listdir(images_path):
+        raw_img = os.path.join(images_path, raw_image)
         if len(detect_face(raw_img)) != 1 or img_count > 1:
             os.remove(raw_img)
             continue
         img_count += 1
 
 
-def make_md(raw_doc_path: str, image_path: str, md_save_path: str = "src/ai/md") -> List[str]:
+def make_md(raw_doc_url: str) -> str:
+    r = requests.get(raw_doc_url, allow_redirects=True)
+    uid = str(uuid.uuid4())
+    raw_doc_path = '{id}.{format}'.format(id=uid, format=raw_doc_url.split('.')[-1])
+    open(raw_doc_path, 'wb').write(r.content)
     doc = aw.Document(raw_doc_path)
-
-    saveOptions = aw.saving.MarkdownSaveOptions()
-    saveOptions.images_folder = image_dir
-
-    md_save_path = os.path.join(md_save_path, Path(raw_doc_path).stem)
-    md_save_path = md_save_path + ".md"
-
-    doc.save(md_save_path, saveOptions)
-    clear_imagies(image_path)
+    md_path = '{old_id}_1.md'.format(old_id=uid)
+    doc.save(md_path)
+    clear_images('./images')
+    with open(md_path, 'r') as f:
+        md_str = f.read()
+    os.remove(md_path)
+    return md_str
 
 
-image_dir = "src/ai/img"
-md_dir = "src/ai/md"
-raw_document_path = "src/ai/resume"
 
-if not os.path.exists(image_dir):
-    os.makedirs(image_dir)
-
-if not os.path.exists(md_dir):
-    os.makedirs(md_dir)
-
-for raw_doc in os.listdir(raw_document_path):
-    raw_document = os.path.join(raw_document_path, raw_doc)
-    make_md(raw_document, image_dir)
+if __name__ == '__main__':
+    print(make_md('https://docs.yandex.ru/docs/view?url=ya-disk-public%3A%2F%2F5J2ooKnHXKhxP743mXfP60AKql%2Fxs12BclB66uJE5nKxBkowQ3pKfNqNltj%2FgoNiq%2FJ6bpmRyOJonT3VoXnDag%3D%3D%3A%2FAlexey%20Melnichnikov.pdf&name=Alexey%20Melnichnikov.pdf&nosw=1'))
