@@ -1,18 +1,22 @@
-"""The home page of the app."""
 
+import os
 import asyncio
 
+from dotenv import find_dotenv, load_dotenv
 from client.templates import template
 from io import BytesIO
 
 import reflex as rx
 import requests
 
-from rxconfig import HOST_WITH_SCHEMA
+load_dotenv(find_dotenv())
+
+HOST_WITH_SCHEMA = os.getenv('HOST_WITH_SCHEMA')
 
 
 class FormInputState(rx.State):
     # Table
+    score: str
     resume_id: str
     first_name: str
     last_name: str
@@ -58,7 +62,7 @@ class FormInputState(rx.State):
 
     async def send_request_to_backend(self, file):
         #  Формируем URL для отправки запроса на бэкэнд
-        backend_url = f"{HOST_WITH_SCHEMA}:8000/api/v1/resumes/"
+        backend_url = f"{HOST_WITH_SCHEMA}:8001/api/v1/resumes/"
 
         await file.seek(0)
         file_content = await file.read()
@@ -68,18 +72,24 @@ class FormInputState(rx.State):
         data = {"api_key": self.api_key}
 
         # Отправляем POST-запрос на бэкэнд
-        response = requests.post(backend_url, files=files, data=data)
-
+        try:
+            response = requests.post(backend_url, files=files, data=data)
+        except Exception as e:
+            self.answer = "Ответ"
+            self.waiting_result = "Ошибка"
+            self.waiting_color = "red"
+            self.result = f"Ошибка {response.status_code} при отправке файла на сервер. {e}"
+            
         # Проверяем код ответа
         if response.status_code == 201:
             self.result = str(response.json()['resume'])
             self.answer = "Ответ"
             self.waiting_result = "Ответ получен"
             self.waiting_color = "green"
+            self.score = str(response.json()['score'])
 
             # Table
             for key, value in response.json()['resume'].items():
-                print(str(value))
                 setattr(self, key, str(value))
 
         else:
@@ -135,6 +145,7 @@ def index() -> rx.Component:
             rx.input(
                 placeholder="Введите token ChatGPT",
                 value=FormInputState.api_key,
+                type="password",
                 on_change=FormInputState.set_api_key,
                 width="700px",
                 height="50px",
@@ -190,12 +201,20 @@ def index() -> rx.Component:
         rx.table.root(
             rx.table.body(
                 rx.table.row(
+                    rx.table.row_header_cell("score"),
+                    rx.table.cell(FormInputState.score),
+                ),
+                rx.table.row(
                     rx.table.row_header_cell("resume_id"),
                     rx.table.cell(FormInputState.resume_id),
                 ),
                 rx.table.row(
                     rx.table.row_header_cell("first_name"),
                     rx.table.cell(FormInputState.first_name),
+                ),
+                rx.table.row(
+                    rx.table.row_header_cell("last_name"),
+                    rx.table.cell(FormInputState.last_name),
                 ),
                 rx.table.row(
                     rx.table.row_header_cell("middle_name"),

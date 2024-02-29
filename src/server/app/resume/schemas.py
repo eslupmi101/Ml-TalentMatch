@@ -24,3 +24,4 @@ class ResumeUpload(BaseModel):
 
 class ResumeResponse(BaseModel):
     resume: dict
+    score: int
