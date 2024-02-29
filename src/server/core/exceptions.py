@@ -1,0 +1,1 @@
+class FileConverterServiceError(Exception): pass
