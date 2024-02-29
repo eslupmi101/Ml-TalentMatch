@@ -26,12 +26,12 @@ docker-compose -f docker-compose.yml up -d
 
 В таком видео будет работать http API через который можно будет получать json response. Например через Postman
 
-- Отправить запрос по endpoint - [](localhost:8001/api/v1/resumes/)localhost:8001/api/v1/resumes/
+- Отправить запрос по endpoint - localhost:8001/api/v1/resumes/
 - Добавить в тело запроса file - файл с резюме и api_key - токен ChatGPT
 
 ### Получить ответ через веб интерфейс
 
-Дождаться пока фронтенд запуститься и подключится к хосту
+Дождаться пока фронтенд запустится и подключиться к хосту
 
 ```
 localhost:3000
