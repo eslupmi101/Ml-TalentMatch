@@ -1,0 +1,36 @@
+version: '3'
+
+volumes:
+  # Storages
+  minio_data:
+  mongodb_data:
+  mongodb_config:
+
+services:
+  # Storages
+  minio:
+    image: docker.io/bitnami/minio:2022
+    volumes:
+      - 'minio_data:/data'
+    ports:
+      - 9000:9000
+      - 9001:9001
+    env_file: .env
+  mongodb:
+    image: mongo:4.4.6
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    env_file: .env
+
+  server:
+    build: ./src/server
+    depends_on:
+      - 'mongodb'
+      - 'minio'
+    ports:
+      - 8001:8001
+    env_file: .env
