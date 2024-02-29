@@ -4,8 +4,11 @@ WORKDIR /app
 
 COPY requirements.txt .
 
+RUN pip install --upgrade pip
+
 RUN pip install -r /app/requirements.txt --no-cache-dir 
 
 COPY . .
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+
