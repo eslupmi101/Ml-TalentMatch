@@ -1,21 +1,13 @@
 import logging
-import uuid
 
-from PIL import Image
-import numpy as np
-import io
 from fastapi import HTTPException, UploadFile, status
 from langchain_openai import ChatOpenAI
 
-
-from core.media_storage import client as minio_client
-from core.media_storage import minio_endpoint
-from core.settings import settings
 from core.database import db
 from .evaluator import evaluate_response
 from .ai import get_result
-from .face_detector import make_md_and_img
 from .upload import upload_resume
+from .converter import convert_resume
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +29,7 @@ async def parse_resume(resume: UploadFile, api_key: str) -> dict:
         )
 
     try:
-        resume_string, image = await make_md_and_img(file_url, is_url=True)
+        resume_string = await convert_resume(file_url)
 
         if not resume_string:
             raise HTTPException(
@@ -82,3 +74,4 @@ async def parse_resume(resume: UploadFile, api_key: str) -> dict:
     new_result["resume"]["resume_id"] = str(insertion_response.inserted_id)
 
     return new_result
+
