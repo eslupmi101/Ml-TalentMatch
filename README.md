@@ -31,46 +31,6 @@ docker-compose -f docker-compose.yml up -d
 
 ### Получить ответ через веб интерфейс
 
-Войти в директорию с фронтендом
-
-```
-cd src/client/
-```
-
-Установить venv
-
-```
-python3 -m venv venv
-```
-
-Войти в venv
-
-```
-# Для unix
-source venv/bin/activate
-
-# Для windows
-source venv/Scripts/activate
-```
-
-Установить зависимости
-
-```
-pip install -r requirements.txt
-```
-
-Проинить reflex
-
-```
-reflex init
-```
-
-Запустить фронтенд.
-
-```
-reflex run
-```
-
 Дождаться пока фронтенд запуститься и подключится к хосту
 
 ```
