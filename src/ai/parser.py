@@ -7,6 +7,7 @@ from langchain_openai import ChatOpenAI
 import json
 from src.ai.evaluator import evaluate
 
+
 class Contact(BaseModel):
     # use parser to factcheck
     value: str = Field(description='Contact Information')
@@ -79,7 +80,6 @@ class Resume(BaseModel):
     # sometimes doesnt add experience ANDREY PODKIDYSHEV
     # probably because employer is university chatgpt thinks that its education
     # Update prompt template to include a variable placeholder for the result
-
 
 
 def get_json(resume_text: str, api_key: str) -> dict:
@@ -164,4 +164,3 @@ def evaluate_response(chat: ChatOpenAI, response: dict, resume: str) -> int:
     for k in response:
         total_score += evaluate(chat, resume, {k: response[k]})
     return total_score
-
