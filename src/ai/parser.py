@@ -6,8 +6,8 @@ from langchain.prompts import load_prompt, PromptTemplate
 from langchain_openai import ChatOpenAI
 import json
 
-
 class Contact(BaseModel):
+    # use parser to factcheck
     value: str = Field(description="Value")
     comment: str = Field(description="Comment")
     contact_type: str = Field(
@@ -19,6 +19,7 @@ class Contact(BaseModel):
 
 
 class Education(BaseModel):
+    # may be use another prompt to factcheck
     year: str = Field(description="Year of completion")
     organization: str = Field(description="Name of the educational institution")
     faculty: str = Field(description="Faculty")
@@ -35,43 +36,55 @@ class Education(BaseModel):
 
 
 class Experience(BaseModel):
-    starts: str = Field(description="Year of start")
-    ends: str = Field(description="Year of end")
+    # may be use another prompt to factcheck
+    starts: str = Field(description="Date of start in format YYYY-MM-DD")
+    ends: str = Field(description="Date of end in format YYYY-MM-DD")
     employer: str = Field(description="Organization")
     city: str = Field(description="City")
+    # maybe use agent?
     url: str = Field(description="Employer`s website URL")
     position: str = Field(description="Position")
     description: str = Field(description="Position description")
-    order: str = Field(
-        description="List of companies where candidate has worked, sorted by year of start in ascending order")  # Ну это надо посмотреть
+    # better to sort by
+    # order: str = Field(
+    #     description="List of companies where candidate has worked, sorted by year of start in ASCENDING ORDER")  # Ну это надо посмотреть
 
 
 class Language(BaseModel):
+    # check by parser
     language: str = Field(description="Language")
-    language_level: str = Field(description="Language proficiency level, choose best option fitting from options given in \"enum\" field", enum=[
+    # check by parser
+    language_level: str = Field(description="Language proficiency level, choose best option fitting from options given in field", enum=[
         "Beginner", "Elementary", "Intermediate", "Upper-intermediate", "Advanced", "Fluent", "Native"])
         # "Начальный", "Элементарный", "Средний", "Средне-продвинутый", "Продвинутый", "В совершенстве", "Родной"]
     # doesnt parse enums correctly
 
 
 class Resume(BaseModel):
+    # separate parser to check location, name and birth date, key_skills, amount of salary expectation
     first_name: str = Field(description="First name")
     last_name: str = Field(description="Surname")
     middle_name: str = Field(description="Middle name")
-    birth_date: str = Field(description="Date of birth in YYYY-MM-DD format")
-    birth_date_year_only: bool = Field(
-        description="true if only year of birth was provided, else false (examples: birth date 2002: true, birth date 2002-03-04: false), IF BIRTH DATE WAS NOT GIVEN DO NOT FILL")  # Вот это лучше ручками
-    country: str = Field(description="Country")
-    city: str = Field(description="City")
+    birth_date: str = Field(description="Date of birth in YYYY-MM-DD format, if only year was given use YYYY format")
+    # this should be done by parsing birth_date
+    # birth_date_year_only: bool = Field(
+    #     description="true if only year of birth was provided, else false (examples: birth date 2002: true, birth date 2002-03-04: false), IF BIRTH DATE WAS NOT GIVEN DO NOT FILL")
+    country: str = Field(description="Country where the candidate is located")
+    city: str = Field(description="City where the candidate is located")
     about: str = Field(description="about")
     key_skills: str = Field(description="Key skills and tools")
     salary_expectations_amount: str = Field(description="Salary expectation amount")
     salary_expectations_currency: str = Field(
         description="Salary expectations currency")
-    photo_path: str = Field(description="Photo URL")
+    # separate parser
+    # photo_path: str = Field(description="Photo URL")
+    # should this even be here?
     gender: str = Field(description="Gender", enum=['Male', 'Female'])
-    resume_name: str = Field(description="Resume`s name")
+    # separate parser
+    # resume_name: str = Field(description="Resume`s name")
+    # backend
     # source_link: str = Field(description="Ссылка на источник резюме")
+    # check links
     contact: List[Contact] = Field(description="Contacts")
     education: List[Education] = Field(description="Education")
     experience: List[Experience] = Field(description="ALL RELEVANT WORK EXPERIENCE")
@@ -88,7 +101,7 @@ class Resume(BaseModel):
 def get_json(resume_text: str, api_key: str) -> dict:
     # Initialize ChatOpenAI instance
     openai = ChatOpenAI(temperature=0.0, api_key=api_key,
-                        model_name="gpt-3.5-turbo")
+                        model_name="gpt-4")
 
     # Initialize JsonOutputParser
     parser = JsonOutputParser(pydantic_object=Resume)
@@ -123,3 +136,36 @@ def get_json(resume_text: str, api_key: str) -> dict:
     result = chain.invoke({"text": resume_text})
 
     return result
+
+
+def fix_language(api_key: str, response: dict):
+    openai = ChatOpenAI(temperature=0.0, api_key=api_key,
+                        model_name="gpt-4")
+    language_items = response['language']
+    result = []
+    # Initialize JsonOutputParser
+    for l in language_items:
+        parser = JsonOutputParser(pydantic_object=Language)
+
+        instructions = parser.get_format_instructions()
+        decoded_instructions = bytes(
+            instructions, "utf-8").decode("unicode_escape")
+        prompt_template = """
+            YOU ARE A POLYGLOT AND EXPERT IN LANGUAGES, 
+            THOUSANDS PEOPLES LIFE DEPENDS ON THIS, DO YOUR ABSOLUTE BEST to replace language proficiency levels in the json object below to the best fitting level from specified:
+            "Beginner", "Elementary", "Intermediate", "Upper-intermediate", "Advanced", "Fluent", "Native"
+            {text}
+            PROVIDE ANSWER IN JSON FORMAT
+        """
+        prompt = PromptTemplate(
+            template=prompt_template,
+            input_variables=["text"],
+            partial_variables={"format_instructions": decoded_instructions},
+        )
+
+        # Run the pipeline
+        chain = prompt | openai | parser
+        fixed_language = chain.invoke({"text": json.dumps(l)})
+        result.append(fixed_language)
+    return result
+
