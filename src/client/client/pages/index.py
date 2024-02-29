@@ -74,33 +74,40 @@ class FormInputState(rx.State):
         # Отправляем POST-запрос на бэкэнд
         try:
             response = requests.post(backend_url, files=files, data=data)
+
+            if response.status_code == 201:
+                self.result = str(response.json()['resume'])
+                self.answer = "Ответ"
+                self.waiting_result = "Ответ получен"
+                self.waiting_color = "green"
+                self.score = str(response.json()['score'])
+
+                # Table
+                for key, value in response.json()['resume'].items():
+                    setattr(self, key, str(value))
+
+            else:
+                self.answer = "Ответ"
+                self.waiting_result = "Ошибка"
+                self.waiting_color = "red"
+                self.result = f"Ошибка {response.status_code} при отправке файла на сервер. {str(response.text)}"
+            # Проверяем код ответа
+
+            self.uploading = False
+            self.progress = 0
+            self.total_bytes = 0
         except Exception as e:
             self.answer = "Ответ"
             self.waiting_result = "Ошибка"
             self.waiting_color = "red"
-            self.result = f"Ошибка {response.status_code} при отправке файла на сервер. {e}"
-            
-        # Проверяем код ответа
-        if response.status_code == 201:
-            self.result = str(response.json()['resume'])
-            self.answer = "Ответ"
-            self.waiting_result = "Ответ получен"
-            self.waiting_color = "green"
-            self.score = str(response.json()['score'])
+            self.result = f"Ошибка при отправке файла на сервер. {e}"
+            # Проверяем код ответа
 
-            # Table
-            for key, value in response.json()['resume'].items():
-                setattr(self, key, str(value))
+            self.uploading = False
+            self.progress = 0
+            self.total_bytes = 0
 
-        else:
-            self.answer = "Ответ"
-            self.waiting_result = "Ошибка"
-            self.waiting_color = "red"
-            self.result = f"Ошибка {response.status_code} при отправке файла на сервер. {str(response.text)}"
-
-        self.uploading = False
-        self.progress = 0
-        self.total_bytes = 0
+        
 
     def handle_upload_progress(self, progress: dict):
         self.uploading = True
