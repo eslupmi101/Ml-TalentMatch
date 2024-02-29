@@ -48,8 +48,8 @@ class Resume(BaseModel):
     last_name: str = Field(description="Фамилия")
     middle_name: str = Field(description="Отчество")
     birth_date: str = Field(description="Дата рождения в формате YYYY-MM-DD")
-    birth_date_year_only: bool = Field(
-        description="Если true, дата рождения вычисляется из возраста (Например, возраст 20 -> 2004-01-01)")  # Вот это лучше ручками
+    # birth_date_year_only: bool = Field(
+    #     description="Если true, дата рождения вычисляется из возраста (Например, возраст 20 -> 2004-01-01)")  # Вот это лучше ручками
     country: str = Field(description="Страна")
     city: str = Field(description="Город")
     about: str = Field(description="Описание")
@@ -63,7 +63,7 @@ class Resume(BaseModel):
     source_link: str = Field(description="Ссылка на источник резюме")
     contact: List[Contact] = Field(description="Контактные данные")
     education: List[Education] = Field(description="Образование")
-    experience: List[Experience] = Field(description="Опыт работы")
+    experience: List[Experience] = Field(description="Опыт работы, обращая внимание исключительно на профессиональные проекты и достижения также пет-проекты.")
     language: List[Language] = Field(
         description="Владение иностранными языками")
 
@@ -80,10 +80,12 @@ prompt_template = """Из следующего текста извлеки ин�
 """
 
 
-async def get_json(resume_text: str, api_key: str) -> dict:
+def get_json(resume_text: str, api_key: str) -> dict:
     # Initialize ChatOpenAI instance
+    
     openai = ChatOpenAI(temperature=0.0, api_key=api_key,
-                        model_name="gpt-3.5-turbo-instruct")
+                        model_name="gpt-3.5-turbo")
+    
 
     # Initialize JsonOutputParser
     parser = JsonOutputParser(pydantic_object=Resume)
