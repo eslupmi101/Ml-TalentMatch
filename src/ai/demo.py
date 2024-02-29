@@ -118,11 +118,6 @@ Apr 2016  Participant of the All-Republican Olympiad in Information Science
 [ref1]: alina_manafli.005.png
 
 '''
-# result = get_json(
-#     api_key='',
-#     resume_text=resume)
-#
-# print(result)
 
 result = json.loads("""
 {
@@ -246,13 +241,13 @@ result = json.loads("""
 }
 """)
 
-openai = ChatOpenAI(temperature=0.0, api_key='',
+result = get_json(
+    api_key='your-api-key',
+    resume_text=resume)
+
+print(result)
+
+openai = ChatOpenAI(temperature=0.0, api_key='your-api-key',
                     model_name="gpt-4-turbo-preview")
 print(evaluate_response(openai, result, resume))
-# TODO: use this to get string of resume
-# import aspose.words as aw
-#
-# doc = aw.Document("/Users/koluj/Documents/GitHub/Ml-TalentMatch/src/ai/resumes/Alina   MANAFLI.pdf")
-# # print(doc.to_string())
-# doc.save("alina_manafli.md")
 

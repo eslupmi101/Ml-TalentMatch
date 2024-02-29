@@ -81,7 +81,6 @@ class Resume(BaseModel):
     # Update prompt template to include a variable placeholder for the result
 
 
-
 def get_json(resume_text: str, api_key: str) -> dict:
     # Initialize ChatOpenAI instance
     openai = ChatOpenAI(temperature=0.0, api_key=api_key,
