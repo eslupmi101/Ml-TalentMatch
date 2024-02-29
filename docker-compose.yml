@@ -26,16 +26,6 @@ services:
       - mongodb_config:/data/configdb
     env_file: .env
 
-  # Client-server
-  client:
-    build: ./src/client
-    depends_on:
-      - 'server'
-    ports:
-      - 3000:3000
-      - 8000:8000
-    env_file: .env
-
   server:
     build: ./src/server
     depends_on:
