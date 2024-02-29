@@ -7,6 +7,7 @@ from langchain_openai import ChatOpenAI
 import json
 from src.ai.evaluator import evaluate
 
+
 class Contact(BaseModel):
     # use parser to factcheck
     value: str = Field(description='Contact Information')
@@ -163,4 +164,3 @@ def evaluate_response(chat: ChatOpenAI, response: dict, resume: str) -> int:
     for k in response:
         total_score += evaluate(chat, resume, {k: response[k]})
     return total_score
-
